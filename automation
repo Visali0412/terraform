@@ -1,0 +1,61 @@
+provider "aws" {
+    region = "us-east-2"
+}
+#VPC block
+resource "aws_vpc" "DevOps" {
+    cidr_block = "10.0.0.0/18"
+tags = {
+    Name = "DevOps"
+}
+}
+#Public Subnet1
+resource "aws_subnet" "Public 1" {
+  vpc_id     = aws_vpc.DevOps.id
+  cidr_block = "10.0.1.0/24"
+  map_public_ip_on_launch = "true"
+  availablity_zone = "us-east-1a"
+
+  tags = {
+    Name = "Public Subnet 1"
+  }
+}
+#Public  Subnet2
+resource "aws_subnet" "Public 2" {
+  vpc_id     = aws_vpc.DevOps.id
+  cidr_block = "10.0.1.0/25"
+  map_public_ip_on_launch = "true"
+  availablity_zone = "us-east-1b"
+
+  tags = {
+    Name = "Public Subnet 2"
+}
+}
+#Configure IGW
+resource "aws_internet_gateway" "DevOps-gw" {
+  vpc_id = aws_vpc.DevOps.id
+
+  tags = {
+    Name = "IGW"
+  }
+}
+#Routing table
+resource "aws_route_table" "DevOps-Public" {
+  vpc_id = aws_vpc.DevOps.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.DevOps-gw.id
+  }
+  tags = {
+    Name = "Public Routetable"
+  }
+}
+#Associate Public subnets to Route table
+resource "aws_route_table_association" "Devops-Public 1" {
+  subnet_id      = aws_subnet.DevOps-Public-1.id
+  route_table_id = aws_route_table.Devops-Public.id
+}
+resource "aws_route_table_association" "Devops-Public 2" {
+  subnet_id      = aws_subnet.DevOps-Public-2.id
+  route_table_id = aws_route_table.Devops-Public.id
+}
